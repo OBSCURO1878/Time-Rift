@@ -54,13 +54,42 @@ public class VidaPersonagem : MonoBehaviour
         }
     }
 
+    public void MorrerInstantaneamente()
+    {
+        vidaAtual = 0;
+
+        AtualizarCoracoes();
+
+        Morrer();
+    }
+
     private void Morrer()
     {
         Debug.Log("Jogador morreu!");
 
-        SceneManager.LoadScene(
-            SceneManager.GetActiveScene().buildIndex
-        );
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+
+        if (Checkpoint.ExisteCheckpoint())
+        {
+            transform.position = Checkpoint.GetUltimaPosicao();
+
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+
+            vidaAtual = vidaMaxima;
+
+            AtualizarCoracoes();
+
+            Debug.Log("Jogador voltou para o último checkpoint!");
+        }
+        else
+        {
+            SceneManager.LoadScene(
+                SceneManager.GetActiveScene().buildIndex
+            );
+        }
     }
 
     public int GetVidaAtual()

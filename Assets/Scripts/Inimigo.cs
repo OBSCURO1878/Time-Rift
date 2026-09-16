@@ -33,7 +33,7 @@ public class Inimigo : MonoBehaviour
 
     private void Morrer()
     {
-        Experiencia jogadorXP = FindFirstObjectByType<Experiencia>();
+        Experiencia jogadorXP = FindAnyObjectByType<Experiencia>();
 
         if (jogadorXP != null)
         {
