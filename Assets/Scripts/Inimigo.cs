@@ -33,11 +33,10 @@ public class Inimigo : MonoBehaviour
 
     private void Morrer()
     {
-        Experiencia jogadorXP = FindAnyObjectByType<Experiencia>();
-
-        if (jogadorXP != null)
+        // Envia a pontuação para o GameController unificado
+        if (GameController.instance != null)
         {
-            jogadorXP.AdicionarXP(experiencia);
+            GameController.instance.AdicionarPontos(experiencia);
         }
 
         Debug.Log(
@@ -47,37 +46,5 @@ public class Inimigo : MonoBehaviour
         );
 
         Destroy(gameObject);
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            CausarDano(collision.gameObject);
-        }
-    }
-
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            CausarDano(collision.gameObject);
-        }
-    }
-
-    private void CausarDano(GameObject jogador)
-    {
-        if (Time.time < proximoDano)
-            return;
-
-        VidaPersonagem vidaJogador =
-            jogador.GetComponent<VidaPersonagem>();
-
-        if (vidaJogador != null)
-        {
-            vidaJogador.ReceberDano(dano);
-
-            proximoDano = Time.time + intervaloDano;
-        }
     }
 }

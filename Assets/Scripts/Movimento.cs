@@ -4,6 +4,7 @@ public class Movimento : MonoBehaviour
 {
     private float horizontalInput;
     private Rigidbody2D rb;
+    private Animator anim;
 
     [SerializeField] private int velocity = 5;
 
@@ -19,6 +20,8 @@ public class Movimento : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+
     }
 
     void Update()
@@ -42,11 +45,32 @@ public class Movimento : MonoBehaviour
         // 3. Movimento horizontal
         horizontalInput = Input.GetAxis("Horizontal");
 
+        if(Input.GetAxis("Horizontal") > 0f)
+        {
+            anim.SetBool("Walk", true);
+            transform.eulerAngles = new Vector3(0f, 0f, 0f);
+        }
+
+        if (Input.GetAxis("Horizontal") < 0f)
+        {
+            anim.SetBool("Walk", true);
+            transform.eulerAngles = new Vector3(0f, 180f, 0f);
+        }
+
+        if (Input.GetAxis("Horizontal") == 0f)
+        {
+            anim.SetBool("Walk", false);
+        }
+
+
+
         // 4. Pulo duplo
         if (Input.GetKeyDown(KeyCode.Space) && pulosRestantes > 0)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, JumpForce);
             pulosRestantes--;
+
+            anim.SetBool("Jump", true);
         }
     }
 
@@ -75,6 +99,8 @@ public class Movimento : MonoBehaviour
                     break;
                 }
             }
+            anim.SetBool("Jump", false);
+
         }
     }
 

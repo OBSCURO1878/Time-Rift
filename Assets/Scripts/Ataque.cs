@@ -14,54 +14,23 @@ public class Ataque : MonoBehaviour
     [SerializeField] private float anguloInicial = -45f;
     [SerializeField] private float anguloFinal = 60f;
     [SerializeField] private float duracaoAtaque = 0.2f;
+    [SerializeField] private Color gizmoColor = Color.red;
 
-    private bool olhandoParaDireita = true;
     private bool atacando = false;
+    [SerializeField] private Animator anim;
+
+    private void Awake()
+    {
+        if (anim == null)
+            anim = GetComponent<Animator>() ?? GetComponentInChildren<Animator>();
+    }
 
     private void Update()
     {
-        AtualizarDirecao();
-
+        // Se pressionar J e não estiver atacando, executa o ataque
         if (Input.GetKeyDown(KeyCode.J) && !atacando)
         {
             StartCoroutine(ExecutarAtaque());
-        }
-    }
-
-    private void AtualizarDirecao()
-    {
-        float movimento = Input.GetAxisRaw("Horizontal");
-
-        if (movimento > 0)
-        {
-            olhandoParaDireita = true;
-        }
-        else if (movimento < 0)
-        {
-            olhandoParaDireita = false;
-        }
-
-        if (pontoAtaque != null)
-        {
-            Vector3 posicao = pontoAtaque.localPosition;
-
-            if (olhandoParaDireita)
-            {
-                posicao.x = Mathf.Abs(posicao.x);
-            }
-            else
-            {
-                posicao.x = -Mathf.Abs(posicao.x);
-            }
-
-            pontoAtaque.localPosition = posicao;
-        }
-
-        if (clavaPivot != null)
-        {
-            Vector3 escala = clavaPivot.localScale;
-            escala.x = olhandoParaDireita ? 1f : -1f;
-            clavaPivot.localScale = escala;
         }
     }
 
@@ -69,54 +38,44 @@ public class Ataque : MonoBehaviour
     {
         atacando = true;
 
-        // Procura inimigos dentro da área de ataque
-        Collider2D[] inimigos = Physics2D.OverlapCircleAll(
-            pontoAtaque.position,
-            raioAtaque,
-            inimigoLayer
-        );
+        if (anim != null)
+        {
+            anim.SetTrigger("Attack");
+        }
+
+        // Como o Objeto PontoAtaque vira junto com o corpo (graças ao eulerAngles do Movimento), 
+        // a origem sempre será a posição global exata do objeto na cena!
+        Vector2 origem = pontoAtaque != null ? (Vector2)pontoAtaque.position : (Vector2)transform.position;
+
+        Debug.Log("Executando ataque na posição: " + origem);
+
+        // Procura inimigos dentro do círculo de ataque
+        Collider2D[] inimigos = Physics2D.OverlapCircleAll(origem, raioAtaque, inimigoLayer);
+
+        Debug.Log("Inimigos encontrados: " + inimigos.Length);
 
         foreach (Collider2D inimigo in inimigos)
         {
             Inimigo alvo = inimigo.GetComponent<Inimigo>();
-
             if (alvo != null)
             {
                 alvo.ReceberDano(dano);
             }
         }
 
-        // Animação da clava
+        // Animação visual da clava (Rotaciona localmente baseada no Pivot)
         if (clavaPivot != null)
         {
-            float inicio = anguloInicial;
-            float fim = anguloFinal;
-
-            if (!olhandoParaDireita)
-            {
-                inicio = -anguloInicial;
-                fim = -anguloFinal;
-            }
-
             float tempo = 0f;
-
             while (tempo < duracaoAtaque)
             {
                 tempo += Time.deltaTime;
-
                 float progresso = tempo / duracaoAtaque;
+                float angulo = Mathf.Lerp(anguloInicial, anguloFinal, progresso);
 
-                float angulo = Mathf.Lerp(inicio, fim, progresso);
-
-                clavaPivot.localRotation = Quaternion.Euler(
-                    0f,
-                    0f,
-                    angulo
-                );
-
+                clavaPivot.localRotation = Quaternion.Euler(0f, 0f, angulo);
                 yield return null;
             }
-
             clavaPivot.localRotation = Quaternion.identity;
         }
 
@@ -125,12 +84,12 @@ public class Ataque : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (pontoAtaque != null)
-        {
-            Gizmos.DrawWireSphere(
-                pontoAtaque.position,
-                raioAtaque
-            );
-        }
+        // Desenha o círculo vermelho perfeitamente onde o PontoAtaque estiver na Scene
+        Vector2 origem = pontoAtaque != null ? (Vector2)pontoAtaque.position : (Vector2)transform.position;
+
+        Gizmos.color = gizmoColor;
+        Gizmos.DrawWireSphere(origem, raioAtaque);
+        Gizmos.DrawLine(transform.position, origem);
+        Gizmos.DrawCube(origem, Vector3.one * 0.1f);
     }
 }
