@@ -3,21 +3,36 @@
 public class Checkpoint : MonoBehaviour
 {
     private static Vector3 ultimaPosicao;
-    // 0 = nenhum checkpoint, >0 = id do checkpoint ativo
-    private static int checkpointId = 0;
+    private static int checkpointId = 0; // 0 = nenhum, >0 = id do checkpoint ativo
 
     [SerializeField]
-    [Tooltip("ID único deste checkpoint (1,2,3,...). Use 0 para ponto de spawn inicial.)")]
+    [Tooltip("ID único deste checkpoint (1,2,3,...).")]
     private int id = 1;
+
+    private Animator anim;
+    private bool jaAtivado = false;
 
     private void Start()
     {
-        // Se não existe checkpoint ativo (id == 0),
-        // o primeiro ponto será a posição inicial do personagem.
+        anim = GetComponent<Animator>();
+
+        // CORREÇÃO: Atualizado para o nome novo da sua animação "Bandeira_Balançando"
+        if (checkpointId > 0 && checkpointId == id)
+        {
+            jaAtivado = true;
+            if (anim != null)
+            {
+                anim.Play("Bandeira_Balançando");
+            }
+        }
+        else
+        {
+            jaAtivado = false;
+        }
+
         if (checkpointId == 0)
         {
             GameObject jogador = GameObject.FindGameObjectWithTag("Player");
-
             if (jogador != null)
             {
                 ultimaPosicao = jogador.transform.position;
@@ -25,14 +40,22 @@ public class Checkpoint : MonoBehaviour
         }
     }
 
+
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && !jaAtivado)
         {
-            ultimaPosicao = other.transform.position;
+            jaAtivado = true;
+            ultimaPosicao = transform.position; // Salva a posição exata da bandeira
             checkpointId = id;
 
-            Debug.Log($"Checkpoint {id} ativado!");
+            // Ativa a animação visual da bandeira subindo!
+            if (anim != null)
+            {
+                anim.SetTrigger("Ativar");
+            }
+
+            Debug.Log($"Checkpoint {id} ativado visualmente e fisicamente!");
         }
     }
 
@@ -51,7 +74,6 @@ public class Checkpoint : MonoBehaviour
         return checkpointId;
     }
 
-    // Zera o checkpoint (usar ao finalizar fase / reiniciar jogo)
     public static void ResetCheckpoint()
     {
         checkpointId = 0;
