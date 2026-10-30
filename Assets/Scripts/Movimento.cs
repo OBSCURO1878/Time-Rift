@@ -21,7 +21,6 @@ public class Movimento : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-
     }
 
     void Update()
@@ -45,32 +44,37 @@ public class Movimento : MonoBehaviour
         // 3. Movimento horizontal
         horizontalInput = Input.GetAxis("Horizontal");
 
-        if(Input.GetAxis("Horizontal") > 0f)
+        if (Input.GetAxis("Horizontal") > 0f)
         {
             anim.SetBool("Walk", true);
             transform.eulerAngles = new Vector3(0f, 0f, 0f);
         }
-
-        if (Input.GetAxis("Horizontal") < 0f)
+        else if (Input.GetAxis("Horizontal") < 0f)
         {
             anim.SetBool("Walk", true);
             transform.eulerAngles = new Vector3(0f, 180f, 0f);
         }
-
-        if (Input.GetAxis("Horizontal") == 0f)
+        else
         {
             anim.SetBool("Walk", false);
         }
 
-
-
-        // 4. Pulo duplo
+        // 4. Pulo e Pulo Duplo
         if (Input.GetKeyDown(KeyCode.Space) && pulosRestantes > 0)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, JumpForce);
-            pulosRestantes--;
 
-            anim.SetBool("Jump", true);
+            // Se pulosRestantes for igual a 1, significa que ele acabou de gastar o segundo pulo (pulo duplo)
+            if (pulosRestantes == 1)
+            {
+                anim.SetTrigger("doubleJump");
+            }
+            else
+            {
+                anim.SetBool("Jump", true);
+            }
+
+            pulosRestantes--;
         }
     }
 
@@ -100,7 +104,6 @@ public class Movimento : MonoBehaviour
                 }
             }
             anim.SetBool("Jump", false);
-
         }
     }
 
