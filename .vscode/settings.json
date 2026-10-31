@@ -67,6 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Time Rifth.slnx",
+    "dotnet.defaultSolution": "Time-Rift.slnx",
     "dotnet.enableWorkspaceBasedDevelopment": false
 }
